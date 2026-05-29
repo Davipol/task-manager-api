@@ -1,17 +1,26 @@
 import { Task, CreateTaskInput, UpdateTaskInput } from "../types/index";
 
+class Logger {
+  constructor(private context: string) {}
+
+  log(message: string): void {
+    console.log(`[${this.context}] ${message}`);
+  }
+}
+
 class TaskService {
+  private logger = new Logger("TaskService");
   private tasks: Task[] = [];
 
-  getAllTasks(): Task[] {
+  public getAllTasks(): Task[] {
     return this.tasks;
   }
 
-  getTaskById(id: string): Task | undefined {
+  public getTaskById(id: string): Task | undefined {
     return this.tasks.find((task) => task.id === id);
   }
 
-  createTask(input: CreateTaskInput): Task {
+  public createTask(input: CreateTaskInput): Task {
     const task: Task = {
       ...input,
       id: Math.random().toString(36).substring(2, 9),
@@ -20,10 +29,11 @@ class TaskService {
       updatedAt: new Date(),
     };
     this.tasks.push(task);
+    this.logger.log(`Task created: ${task.id}`);
     return task;
   }
 
-  updateTask(id: string, input: UpdateTaskInput): Task | undefined {
+  public updateTask(id: string, input: UpdateTaskInput): Task | undefined {
     const existingTask = this.getTaskById(id);
     if (!existingTask) {
       return undefined;
@@ -36,12 +46,14 @@ class TaskService {
     };
     const index = this.tasks.findIndex((task) => task.id === id);
     this.tasks[index] = updatedTask;
+    this.logger.log(`Task Updated:${id}`);
     return updatedTask;
   }
-  deleteTask(id: string): boolean {
+  public deleteTask(id: string): boolean {
     const updatedTasks = this.tasks.filter((task) => task.id !== id);
     const wasDeleted = updatedTasks.length < this.tasks.length;
     this.tasks = updatedTasks;
+    if (wasDeleted) this.logger.log(`Task deleted: ${id}`);
     return wasDeleted;
   }
 }
