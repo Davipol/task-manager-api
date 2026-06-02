@@ -1,14 +1,8 @@
-/*Create src/routes/tasks.ts with Express routes:
-  GET    /tasks        - return all tasks
-  GET    /tasks/:id    - return a single task
-  POST   /tasks        - create a task (validate body with your type guard)
-  PATCH  /tasks/:id    - update a task
-  DELETE /tasks/:id    - delete a task
-  */
 import { Router, Request, Response, NextFunction } from "express";
-import { successResponse, errorResponse } from "../utils/response";
+import { successResponse } from "../utils/response";
 import { TaskService } from "../services/taskService";
 import { isCreateTaskInput, isUpdateTaskInput } from "../utils/validators";
+import { NotFoundError, ValidationError } from "../errors/AppError";
 const router = Router();
 const taskService = new TaskService();
 
@@ -24,6 +18,9 @@ router.get("/tasks/:id", (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
     const task = taskService.getTaskById(id);
+    if (!task) {
+      throw new NotFoundError("Task", id);
+    }
     res.json(successResponse(task));
   } catch (err) {
     next(err);
@@ -33,7 +30,7 @@ router.post("/tasks", (req: Request, res: Response, next: NextFunction) => {
   try {
     const task = req.body;
     if (!isCreateTaskInput(task)) {
-      return res.status(400).json(errorResponse("Bad request"));
+      throw new ValidationError("Invalid request body");
     } else {
       const created = taskService.createTask(task);
       res.status(201).json(successResponse(created));
@@ -48,11 +45,11 @@ router.patch(
     try {
       const id = req.params.id as string;
       if (!isUpdateTaskInput(req.body)) {
-        return res.status(400).json(errorResponse("Invalid request body"));
+        throw new ValidationError("Invalid request body");
       }
       const updated = taskService.updateTask(id, req.body);
       if (!updated) {
-        return res.status(404).json(errorResponse("Task not found"));
+        throw new NotFoundError("Task", id);
       }
       res.json(successResponse(updated));
     } catch (err) {
@@ -67,7 +64,7 @@ router.delete(
       const id = req.params.id as string;
       const deleted = taskService.deleteTask(id);
       if (!deleted) {
-        return res.status(404).json(errorResponse("Task not found"));
+        throw new NotFoundError("Task", id);
       }
       res.status(204).send();
     } catch (err) {
