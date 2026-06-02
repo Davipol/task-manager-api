@@ -8,7 +8,7 @@ class Logger {
   }
 }
 
-class TaskService {
+export class TaskService {
   private logger = new Logger("TaskService");
   private tasks: Task[] = [];
 

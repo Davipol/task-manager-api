@@ -1,20 +1,30 @@
-import { Priority, Status, CreateTaskInput } from "../types";
+import { Priority, Status, CreateTaskInput, UpdateTaskInput } from "../types";
 
 //Type guards
 
-const isValidPriority = (value: unknown): value is Priority => {
+export const isValidPriority = (value: unknown): value is Priority => {
   return value === "low" || value === "medium" || value === "high";
 };
 
-const isValidStatus = (value: unknown): value is Status => {
+export const isValidStatus = (value: unknown): value is Status => {
   return value === "todo" || value === "in-progress" || value === "done";
 };
 
-const isCreateTaskInput = (value: unknown): value is CreateTaskInput => {
+export const isCreateTaskInput = (value: unknown): value is CreateTaskInput => {
   return (
     typeof value === "object" &&
     value !== null &&
     typeof (value as { title?: unknown }).title === "string" &&
     isValidPriority((value as { priority?: unknown }).priority)
   );
+};
+
+export const isUpdateTaskInput = (value: unknown): value is UpdateTaskInput => {
+  if (typeof value !== "object" || value === null) return false;
+  const input = value as { title?: unknown; description?: unknown; status?: unknown; priority?: unknown };
+  if (input.title !== undefined && typeof input.title !== "string") return false;
+  if (input.description !== undefined && typeof input.description !== "string") return false;
+  if (input.status !== undefined && !isValidStatus(input.status)) return false;
+  if (input.priority !== undefined && !isValidPriority(input.priority)) return false;
+  return true;
 };
