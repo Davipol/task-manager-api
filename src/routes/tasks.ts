@@ -49,6 +49,21 @@ router.post("/tasks", (req: Request, res: Response, next: NextFunction) => {
   }
 });
 router.patch(
+  "/tasks/:id/complete",
+  (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = req.params.id as string;
+      const updated = taskService.updateTask(id, { status: "done" });
+      if (!updated) {
+        throw new NotFoundError("Task", id);
+      }
+      res.json(successResponse(updated));
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+router.patch(
   "/tasks/:id",
   (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -66,6 +81,7 @@ router.patch(
     }
   },
 );
+
 router.delete(
   "/tasks/:id",
   (req: Request, res: Response, next: NextFunction) => {
