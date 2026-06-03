@@ -24,4 +24,8 @@ interface UpdateTaskInput {
   priority?: Priority;
 }
 
-export { Priority, Status, Task, CreateTaskInput, UpdateTaskInput };
+interface TaskQuery {
+  status?: Status;
+  priority?: Priority;
+}
+export { Priority, Status, Task, CreateTaskInput, UpdateTaskInput, TaskQuery };

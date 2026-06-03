@@ -3,17 +3,26 @@ import { successResponse } from "../utils/response";
 import { TaskService } from "../services/taskService";
 import { isCreateTaskInput, isUpdateTaskInput } from "../utils/validators";
 import { NotFoundError, ValidationError } from "../errors/AppError";
+import { TaskQuery } from "../types/index";
+
 const router = Router();
 const taskService = new TaskService();
 
-router.get("/tasks", (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const tasks = taskService.getAllTasks();
-    res.json(successResponse(tasks));
-  } catch (err) {
-    next(err);
-  }
-});
+router.get(
+  "/tasks",
+  (req: Request<{}, {}, {}, TaskQuery>, res: Response, next: NextFunction) => {
+    try {
+      const tasks = taskService.getAllTasks();
+      const { status, priority } = req.query;
+      const filtered = tasks
+        .filter((task) => !status || task.status === status)
+        .filter((task) => !priority || task.priority === priority);
+      res.json(successResponse(filtered));
+    } catch (err) {
+      next(err);
+    }
+  },
+);
 router.get("/tasks/:id", (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
